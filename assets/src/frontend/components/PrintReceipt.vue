@@ -14,7 +14,11 @@ export default {
 
     methods: {
         printReceipt() {
-            var self = this;
+            var orderdata = this.$store.state.Order.orderdata;
+            if (orderdata.payment_method == "wepos_shoplit") {
+              window.Shoplit.printReceipt(JSON.stringify(orderdata));
+              return;
+            }
 
             setTimeout( () => {
                 window.print();

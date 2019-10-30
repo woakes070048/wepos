@@ -1,5 +1,5 @@
-pluginWebpack([0],Array(28).concat([
-/* 28 */
+pluginWebpack([0],Array(25).concat([
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9,11 +9,11 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _Cart = __webpack_require__(29);
+var _Cart = __webpack_require__(26);
 
 var _Cart2 = _interopRequireDefault(_Cart);
 
-var _Order = __webpack_require__(31);
+var _Order = __webpack_require__(28);
 
 var _Order2 = _interopRequireDefault(_Order);
 
@@ -32,7 +32,7 @@ exports.default = new Vuex.Store({
 });
 
 /***/ }),
-/* 29 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -42,7 +42,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _helper = __webpack_require__(30);
+var _helper = __webpack_require__(27);
 
 var _helper2 = _interopRequireDefault(_helper);
 
@@ -168,7 +168,9 @@ exports.default = {
             cartObject.backorders_allowed = product.backorders_allowed;
             cartObject.stock_quantity = product.stock_quantity;
 
-            var index = weLo_.findIndex(state.cartdata.line_items, { product_id: cartObject.product_id, variation_id: cartObject.variation_id });
+            var index = state.cartdata.line_items.findIndex(function (el) {
+                return el.product_id == cartObject.product_id && el.variation_id == cartObject.variation_id;
+            });
 
             if (index < 0) {
                 if (_helper2.default.hasStock(product)) {
@@ -344,7 +346,7 @@ exports.default = {
 };
 
 /***/ }),
-/* 30 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -370,7 +372,7 @@ exports.default = {
 };
 
 /***/ }),
-/* 31 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -462,6 +464,9 @@ exports.default = {
 };
 
 /***/ }),
+/* 29 */,
+/* 30 */,
+/* 31 */,
 /* 32 */,
 /* 33 */,
 /* 34 */,
@@ -489,9 +494,7 @@ exports.default = {
 /* 56 */,
 /* 57 */,
 /* 58 */,
-/* 59 */,
-/* 60 */,
-/* 61 */
+/* 59 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -508,19 +511,36 @@ exports.default = {
 });
 
 /***/ }),
-/* 62 */
+/* 60 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Overlay_vue__ = __webpack_require__(147);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ProductSearch_vue__ = __webpack_require__(150);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CustomerSearch_vue__ = __webpack_require__(153);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__FeeKeypad_vue__ = __webpack_require__(156);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_vue_mugen_scroll__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Overlay_vue__ = __webpack_require__(143);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ProductSearch_vue__ = __webpack_require__(146);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__CustomerSearch_vue__ = __webpack_require__(149);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__FeeKeypad_vue__ = __webpack_require__(152);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_vue_mugen_scroll__ = __webpack_require__(68);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_vue_mugen_scroll___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_vue_mugen_scroll__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__PrintReceipt_vue__ = __webpack_require__(163);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__PrintReceiptHtml_vue__ = __webpack_require__(166);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__CustomerNote_vue__ = __webpack_require__(169);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__PrintReceipt_vue__ = __webpack_require__(159);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__PrintReceiptHtml_vue__ = __webpack_require__(162);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__CustomerNote_vue__ = __webpack_require__(165);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -1125,6 +1145,7 @@ let Modal = wepos_get_lib('Modal');
             emptyGatewayDiv: 0,
             cashAmount: '',
             cardAmount: '',
+            authCode: '',
             availableTax: [],
             settings: {},
             taxSettings: {},
@@ -1138,6 +1159,8 @@ let Modal = wepos_get_lib('Modal');
             createprintreceipt: false,
             selectedCategory: '',
             selectedGateway: '',
+            mpressResult: '',
+            contentWrap: {},
             categories: [],
             showReceiptHtml: wepos.hooks.applyFilters('wepos_render_receipt_html', true),
             quickLinkList: wepos.hooks.applyFilters('wepos_quick_links', []),
@@ -1278,6 +1301,7 @@ let Modal = wepos_get_lib('Modal');
             this.showPaymentReceipt = false;
             this.cashAmount = '';
             this.cardAmount = '';
+            this.authCode = '';
             this.eventBus.$emit('emptycart', this.orderdata);
             this.showQucikMenu = false;
         },
@@ -1302,135 +1326,176 @@ let Modal = wepos_get_lib('Modal');
             var self = this,
                 gateway = weLo_.find(this.availableGateways, { 'id': this.orderdata.payment_method }),
                 orderdata = wepos.hooks.applyFilters('wepos_order_form_data', {
-                  billing: this.orderdata.billing,
-                  shipping: this.orderdata.shipping,
-                  line_items: this.cartdata.line_items,
-                  fee_lines: this.cartdata.fee_lines,
-                  customer_id: this.orderdata.customer_id,
-                  customer_note: this.orderdata.customer_note,
-                  payment_method: this.orderdata.payment_method,
-                  payment_method_title: this.orderdata.payment_method_title,
-                  meta_data: [{
-                      key: '_wepos_is_pos_order',
-                      value: true
-                  }, {
-                      key: '_wepos_cash_tendered_amount',
-                      value: self.cashAmount.toString()
-                  }, {
-                      key: '_wepos_card_tendered_amount',
-                      value: self.cardAmount.toString()
-                  }, {
-                      key: '_wepos_cash_change_amount',
-                      value: self.changeAmount.toString()
-                  }]
-              }, this.orderdata, this.cartdata);
+                billing: this.orderdata.billing,
+                shipping: this.orderdata.shipping,
+                line_items: this.cartdata.line_items,
+                fee_lines: this.cartdata.fee_lines,
+                customer_id: this.orderdata.customer_id,
+                customer_note: this.orderdata.customer_note,
+                payment_method: this.orderdata.payment_method,
+                payment_method_title: this.orderdata.payment_method_title,
+                meta_data: [{
+                    key: '_wepos_is_pos_order',
+                    value: true
+                }]
+            }, this.orderdata, this.cartdata);
 
-            var $contentWrap = jQuery('.wepos-checkout-wrapper .right-content').find('.content');
-            $contentWrap.block({ message: null, overlayCSS: { background: '#fff url(' + wepos.ajax_loader + ') no-repeat center', opacity: 0.4 } });
+            this.contentWrap = jQuery('.wepos-checkout-wrapper').find('.right-content');
+            this.contentWrap.block({ message: null, overlayCSS: { background: '#fff url(' + wepos.ajax_loader + ') no-repeat center', opacity: 0.4 } });
 
             if (this.orderdata.payment_method == 'wepos_shoplit') {
-              // if (typeof mpress !== 'undefined' || navigator.userAgent.indexOf('SHOPLIT') == -1) {
-              //   var data = {
-              //     result: 'failure',
-              //     responseJSON: {
-              //       message: this.__('Shoplit Interface not available', 'wepos')
-              //     }
-              //   };
-              //   alert(data.responseJSON.message);
-              //   $contentWrap.unblock();
-              //   return data;
-              // }
-              wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders', orderdata).done(response => {
-                mpress.doPayment(response)
-                .then(
-                  result => wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/payment/process', response).done(data => {
-                    if (data.result == 'success') {
-                        this.$router.push({
-                            name: 'Home',
-                            query: {
-                                order_key: response.order_key,
-                                payment: 'success'
-                            }
-                        });
-                        this.printdata = wepos.hooks.applyFilters('wepos_after_payment_print_data', {
-                            line_items: this.cartdata.line_items,
-                            fee_lines: this.cartdata.fee_lines,
-                            subtotal: this.$store.getters['Cart/getSubtotal'],
-                            taxtotal: this.$store.getters['Cart/getTotalTax'],
-                            ordertotal: this.$store.getters['Cart/getTotal'],
-                            gateway: {
-                                id: response.payment_method,
-                                title: response.payment_method_title
-                            },
-                            order_id: response.id,
-                            order_date: response.date_created,
-                            cashamount: this.cashAmount.toString(),
-                            cardamount: this.cardAmount.toString(),
-                            changeamount: this.changeAmount.toString()
-                        }, orderdata);
-                    } else {
-                        $contentWrap.unblock();
-                    }
-                  }).fail(data => {
-                    $contentWrap.unblock();
+                if (typeof mpress == 'undefined' || navigator.userAgent.indexOf('SHOPLIT') == -1) {
+                    var data = {
+                        result: 'failure',
+                        responseJSON: {
+                            message: this.__('Shoplit Interface not available', 'wepos')
+                        }
+                    };
                     alert(data.responseJSON.message);
-                  }),
-                  error => {
-                    $contentWrap.unblock();
-                    alert(data.responseJSON.message);
-                  }
-                );
-            }).fail(response => {
-                $contentWrap.unblock();
-                alert(response.responseJSON.message);
-              });
-            } else {
-              wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders', orderdata).done(response => {
-                wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/payment/process', response).done(data => {
-                    if (data.result == 'success') {
-                        this.$router.push({
-                            name: 'Home',
-                            query: {
-                                order_key: response.order_key,
-                                payment: 'success'
-                            }
-                        });
-                        this.printdata = wepos.hooks.applyFilters('wepos_after_payment_print_data', {
-                            line_items: this.cartdata.line_items,
-                            fee_lines: this.cartdata.fee_lines,
-                            subtotal: this.$store.getters['Cart/getSubtotal'],
-                            taxtotal: this.$store.getters['Cart/getTotalTax'],
-                            ordertotal: this.$store.getters['Cart/getTotal'],
-                            gateway: {
-                                id: response.payment_method,
-                                title: response.payment_method_title
-                            },
-                            order_id: response.id,
-                            order_date: response.date_created,
-                            cashamount: this.cashAmount.toString(),
-                            cardamount: this.cardAmount.toString(),
-                            changeamount: this.changeAmount.toString()
-                        }, orderdata);
-                    } else {
-                        $contentWrap.unblock();
-                    }
-                }).fail(data => {
-                    $contentWrap.unblock();
-                    alert(data.responseJSON.message);
+                    this.contentWrap.unblock();
+                    this.$router.push({
+                        name: 'Home',
+                        query: {
+                            message: this.__('Shoplit Interface not available', 'wepos'),
+                            order_key: orderdata.order_key,
+                            payment: 'failure'
+                        }
+                    });
+                    return data;
+                }
+                wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders', orderdata).done(response => {
+                    // Update the local copy
+                    this.$store.state.Order.orderdata = response;
+                    // Start the mPress/Shoplit Transaction on the PED
+                    var result = mpress.startPEDPayment(response);
+                    console.log('mPress Start result :' + result);
+                }).fail(response => {
+                    this.contentWrap.unblock();
+                    alert(response.responseJSON.message);
                 });
-              }).fail(response => {
-                $contentWrap.unblock();
-                alert(response.responseJSON.message);
-            });
-          }
+            } else {
+                wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders', orderdata).done(response => {
+                    var update_meta_data = [{
+                        key: '_wepos_cash_tendered_amount',
+                        value: self.cashAmount.toString()
+                    }, {
+                        key: '_wepos_cash_change_amount',
+                        value: self.changeAmount.toString()
+                    }];
+                    wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders/' + response.id, update_meta_data);
+                    wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/payment/process', response).done(data => {
+                        if (data.result == 'success') {
+                            this.$router.push({
+                                name: 'Home',
+                                query: {
+                                    order_key: response.order_key,
+                                    payment: 'success'
+                                }
+                            });
+                            this.printdata = wepos.hooks.applyFilters('wepos_after_payment_print_data', {
+                                line_items: this.cartdata.line_items,
+                                fee_lines: this.cartdata.fee_lines,
+                                subtotal: this.$store.getters['Cart/getSubtotal'],
+                                taxtotal: this.$store.getters['Cart/getTotalTax'],
+                                ordertotal: this.$store.getters['Cart/getTotal'],
+                                gateway: {
+                                    id: response.payment_method,
+                                    title: response.payment_method_title
+                                },
+                                order_id: response.id,
+                                order_date: response.date_created,
+                                cashamount: this.cashAmount.toString(),
+                                changeamount: this.changeAmount.toString()
+                            }, orderdata);
+                        }
+                        contentWrap.unblock();
+                    }).fail(data => {
+                        contentWrap.unblock();
+                        alert(data.responseJSON.message);
+                    });
+                });
+            }
         },
+        completePayment(e) {
+            // Complete the mPress Payment and record the result
+            // Get the stored order data
+            var orderdata = this.$store.state.Order.orderdata;
 
+            var response = JSON.parse(document.getElementById('mpress_result').value);
+            response = response.slice(1, -1);
+            this.mpressResult = JSON.parse(response);
+            this.cardAmount = this.mpressResult.DisplayTransactionAmount;
+            this.authCode = this.mpressResult.AuthorisationCode;
+            // Now update the meta_data with the payment response
+            var update_meta_data = {
+                "meta_data": [{
+                    key: 'shoplit_card_tendered_amount',
+                    value: this.mpressResult.DisplayTransactionAmount
+                }, {
+                    key: 'shoplit_authorisation_code',
+                    value: this.mpressResult.AuthorisationCode
+                    // }, {
+                    //     key: 'shoplit_transaction_index',
+                    //     value: transaction.TransactionIndex
+                }, {
+                    key: 'shoplit_pan',
+                    value: this.mpressResult.PAN
+                }, {
+                    key: 'shoplit_status_description',
+                    value: this.mpressResult.StatusDescription
+                }, {
+                    key: 'shoplit_status_description',
+                    value: JSON.stringify(this.mpressResult, null, 2)
+                }]
+                // Add additional Order Meta Data containing the payment info
+            };wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders/' + orderdata.id, update_meta_data).done(ordermetaupdate => {
+                orderdata.meta_data = ordermetaupdate.meta_data;
+                this.$store.state.Order.orderdata = orderdata;
+            }); // Add the notes
+            var order_note = {
+                note: 'Transaction Result: ' + JSON.stringify(this.mpressResult, null, 2)
+            };
+            wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders/' + orderdata.id + '/notes', order_note); // Nothing we can do if it fails
+            // Now process the payment
+            wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/payment/process', orderdata).done(process_response => {
+                if (process_response.result == 'success') {
+                    this.$router.push({
+                        name: 'Home',
+                        query: {
+                            order_key: orderdata.order_key,
+                            payment: 'success'
+                        }
+                    });
+                    this.printdata = wepos.hooks.applyFilters('wepos_after_payment_print_data', {
+                        line_items: this.cartdata.line_items,
+                        fee_lines: this.cartdata.fee_lines,
+                        subtotal: this.$store.getters['Cart/getSubtotal'],
+                        taxtotal: this.$store.getters['Cart/getTotalTax'],
+                        ordertotal: this.$store.getters['Cart/getTotal'],
+                        gateway: {
+                            id: orderdata.payment_method,
+                            title: orderdata.payment_method_title
+                        },
+                        order_id: orderdata.id,
+                        order_date: orderdata.date_created,
+                        cardamount: this.cardAmount.toString(),
+                        authcode: this.authCode
+                    }, orderdata);
+                    this.contentWrap.unblock();
+                } else {
+                    this.contentWrap.unblock();
+                }
+            }).fail(fail_resp => {
+                this.contentWrap.unblock();
+                alert(fail_resp.responseJSON.message);
+            });
+            this.contentWrap.unblock();
+        },
         initPayment() {
             this.showModal = true;
             this.$store.dispatch('Order/setGatewayAction', this.availableGateways[0]);
             this.selectedGateway = this.availableGateways[0].id;
         },
-
         backToSale() {
             this.showModal = false;
             this.showHelp = false;
@@ -1487,7 +1552,6 @@ let Modal = wepos_get_lib('Modal');
                 this.productLoading = false;
             }
         },
-
         maybeRemoveDeletedProduct(cartData) {
             return new Promise((resolve, reject) => {
                 if (!cartData) {
@@ -1520,7 +1584,6 @@ let Modal = wepos_get_lib('Modal');
                 });
             });
         },
-
         selectCustomer(customer) {
             this.$store.dispatch('Order/setCustomerAction', customer);
         },
@@ -1641,7 +1704,9 @@ let Modal = wepos_get_lib('Modal');
         },
         filterProducts() {
             this.products = this.products.filter(product => {
-                return weLo_.findIndex(product.categories, { id: this.$route.query.category }) > 0;
+                return product.categories.findIndex(function (el) {
+                    return el.id == this.$route.query.category;
+                }) > 0;
             });
         },
 
@@ -1684,7 +1749,7 @@ let Modal = wepos_get_lib('Modal');
 });
 
 /***/ }),
-/* 63 */
+/* 61 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1704,12 +1769,12 @@ let Modal = wepos_get_lib('Modal');
 });
 
 /***/ }),
-/* 64 */
+/* 62 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__KeyboardControl_vue__ = __webpack_require__(65);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_v_hotkey__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__KeyboardControl_vue__ = __webpack_require__(63);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_v_hotkey__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_v_hotkey___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_v_hotkey__);
 //
 //
@@ -2006,11 +2071,11 @@ let Modal = wepos_get_lib('Modal');
 });
 
 /***/ }),
-/* 65 */
+/* 63 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_KeyboardControl_vue__ = __webpack_require__(66);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_KeyboardControl_vue__ = __webpack_require__(64);
 /* unused harmony namespace reexport */
 var disposed = false
 var normalizeComponent = __webpack_require__(0)
@@ -2057,7 +2122,7 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 66 */
+/* 64 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2137,11 +2202,11 @@ if (false) {(function () {
 });
 
 /***/ }),
-/* 67 */
+/* 65 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__KeyboardControl_vue__ = __webpack_require__(65);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__KeyboardControl_vue__ = __webpack_require__(63);
 //
 //
 //
@@ -2523,11 +2588,11 @@ let Modal = wepos_get_lib('Modal');
 });
 
 /***/ }),
-/* 68 */
+/* 66 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Keyboard_vue__ = __webpack_require__(158);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Keyboard_vue__ = __webpack_require__(154);
 //
 //
 //
@@ -2646,7 +2711,7 @@ let Modal = wepos_get_lib('Modal');
 });
 
 /***/ }),
-/* 69 */
+/* 67 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2839,8 +2904,8 @@ const Tokens = {
 });
 
 /***/ }),
-/* 70 */,
-/* 71 */
+/* 68 */,
+/* 69 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2860,7 +2925,11 @@ const Tokens = {
 
     methods: {
         printReceipt() {
-            var self = this;
+            var orderdata = this.$store.state.Order.orderdata;
+            if (orderdata.payment_method == "wepos_shoplit") {
+                window.Shoplit.printReceipt(JSON.stringify(orderdata));
+                return;
+            }
 
             setTimeout(() => {
                 window.print();
@@ -2870,10 +2939,20 @@ const Tokens = {
 });
 
 /***/ }),
-/* 72 */
+/* 70 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2983,7 +3062,7 @@ const Tokens = {
 });
 
 /***/ }),
-/* 73 */
+/* 71 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3040,6 +3119,8 @@ const Tokens = {
 });
 
 /***/ }),
+/* 72 */,
+/* 73 */,
 /* 74 */,
 /* 75 */,
 /* 76 */,
@@ -3101,25 +3182,21 @@ const Tokens = {
 /* 132 */,
 /* 133 */,
 /* 134 */,
-/* 135 */,
-/* 136 */,
-/* 137 */,
-/* 138 */,
-/* 139 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _App = __webpack_require__(140);
+var _App = __webpack_require__(136);
 
 var _App2 = _interopRequireDefault(_App);
 
-var _router = __webpack_require__(144);
+var _router = __webpack_require__(140);
 
 var _router2 = _interopRequireDefault(_router);
 
-var _store = __webpack_require__(28);
+var _store = __webpack_require__(25);
 
 var _store2 = _interopRequireDefault(_store);
 
@@ -3144,18 +3221,18 @@ new Vue({
 });
 
 /***/ }),
-/* 140 */
+/* 136 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_App_vue__ = __webpack_require__(61);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_App_vue__ = __webpack_require__(59);
 /* empty harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_152fd186_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(143);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_152fd186_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(139);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(141)
+  __webpack_require__(137)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -3201,14 +3278,14 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 141 */
+/* 137 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 142 */,
-/* 143 */
+/* 138 */,
+/* 139 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3235,7 +3312,7 @@ if (false) {
 }
 
 /***/ }),
-/* 144 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3245,7 +3322,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _Home = __webpack_require__(145);
+var _Home = __webpack_require__(141);
 
 var _Home2 = _interopRequireDefault(_Home);
 
@@ -3265,18 +3342,18 @@ exports.default = new Router({
 });
 
 /***/ }),
-/* 145 */
+/* 141 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Home_vue__ = __webpack_require__(62);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Home_vue__ = __webpack_require__(60);
 /* empty harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_76253014_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Home_vue__ = __webpack_require__(172);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_76253014_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Home_vue__ = __webpack_require__(168);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(146)
+  __webpack_require__(142)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -3322,23 +3399,23 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 146 */
+/* 142 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 147 */
+/* 143 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Overlay_vue__ = __webpack_require__(63);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Overlay_vue__ = __webpack_require__(61);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b9b24aa_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Overlay_vue__ = __webpack_require__(149);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b9b24aa_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Overlay_vue__ = __webpack_require__(145);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(148)
+  __webpack_require__(144)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -3384,13 +3461,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 148 */
+/* 144 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 149 */
+/* 145 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3412,17 +3489,17 @@ if (false) {
 }
 
 /***/ }),
-/* 150 */
+/* 146 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ProductSearch_vue__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ProductSearch_vue__ = __webpack_require__(62);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_64fc4f12_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ProductSearch_vue__ = __webpack_require__(152);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_64fc4f12_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ProductSearch_vue__ = __webpack_require__(148);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(151)
+  __webpack_require__(147)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -3468,13 +3545,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 151 */
+/* 147 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 152 */
+/* 148 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3503,7 +3580,7 @@ var render = function() {
           on: {
             submit: function($event) {
               $event.preventDefault()
-              _vm.handleProductScan($event)
+              return _vm.handleProductScan($event)
             }
           }
         },
@@ -3528,11 +3605,11 @@ var render = function() {
             on: {
               focus: function($event) {
                 $event.preventDefault()
-                _vm.triggerFocus($event)
+                return _vm.triggerFocus($event)
               },
               keyup: function($event) {
                 $event.preventDefault()
-                _vm.searchProduct($event)
+                return _vm.searchProduct($event)
               },
               input: function($event) {
                 if ($event.target.composing) {
@@ -3577,7 +3654,7 @@ var render = function() {
                   on: {
                     click: function($event) {
                       $event.preventDefault()
-                      _vm.changeMode("product")
+                      return _vm.changeMode("product")
                     }
                   }
                 },
@@ -3592,7 +3669,7 @@ var render = function() {
                   on: {
                     click: function($event) {
                       $event.preventDefault()
-                      _vm.changeMode("scan")
+                      return _vm.changeMode("scan")
                     }
                   }
                 },
@@ -3626,135 +3703,146 @@ var render = function() {
                           "key-down": _vm.onKeyDown,
                           "key-up": _vm.onKeyUp
                         },
-                        scopedSlots: _vm._u([
-                          {
-                            key: "default",
-                            fn: function(ref) {
-                              var selectedIndex = ref.selectedIndex
-                              return _vm._l(_vm.searchableProduct, function(
-                                product,
-                                index
-                              ) {
-                                return _c(
-                                  "li",
-                                  {
-                                    key: index,
-                                    staticClass: "product-search-item",
-                                    class: { selected: index === selectedIndex }
-                                  },
-                                  [
-                                    product.type == "simple"
-                                      ? [
-                                          _c(
-                                            "a",
-                                            {
-                                              staticClass: "wepos-clearfix",
-                                              attrs: { href: "#" },
-                                              on: {
-                                                click: function($event) {
-                                                  _vm.addToCartAction(product)
+                        scopedSlots: _vm._u(
+                          [
+                            {
+                              key: "default",
+                              fn: function(ref) {
+                                var selectedIndex = ref.selectedIndex
+                                return _vm._l(_vm.searchableProduct, function(
+                                  product,
+                                  index
+                                ) {
+                                  return _c(
+                                    "li",
+                                    {
+                                      key: index,
+                                      staticClass: "product-search-item",
+                                      class: {
+                                        selected: index === selectedIndex
+                                      }
+                                    },
+                                    [
+                                      product.type == "simple"
+                                        ? [
+                                            _c(
+                                              "a",
+                                              {
+                                                staticClass: "wepos-clearfix",
+                                                attrs: { href: "#" },
+                                                on: {
+                                                  click: function($event) {
+                                                    return _vm.addToCartAction(
+                                                      product
+                                                    )
+                                                  }
                                                 }
-                                              }
-                                            },
-                                            [
-                                              _vm._v(
-                                                _vm._s(product.name) +
-                                                  "\n                                    "
-                                              ),
-                                              _c(
-                                                "span",
-                                                { staticClass: "price" },
-                                                [
-                                                  _vm._v(
-                                                    _vm._s(
-                                                      _vm.formatPrice(
-                                                        product.price
+                                              },
+                                              [
+                                                _vm._v(
+                                                  _vm._s(product.name) +
+                                                    "\n                                    "
+                                                ),
+                                                _c(
+                                                  "span",
+                                                  { staticClass: "price" },
+                                                  [
+                                                    _vm._v(
+                                                      _vm._s(
+                                                        _vm.formatPrice(
+                                                          product.price
+                                                        )
                                                       )
                                                     )
-                                                  )
-                                                ]
-                                              ),
-                                              _vm._v(" "),
-                                              product.sku
-                                                ? _c(
-                                                    "span",
-                                                    { staticClass: "sku" },
-                                                    [
-                                                      _vm._v(
-                                                        _vm._s(product.sku)
-                                                      )
-                                                    ]
-                                                  )
-                                                : _vm._e(),
-                                              _vm._v(" "),
-                                              _c("span", {
-                                                staticClass:
-                                                  "action flaticon-enter-arrow wepos-right"
-                                              })
-                                            ]
-                                          )
-                                        ]
-                                      : _vm._e(),
-                                    _vm._v(" "),
-                                    product.type == "variable"
-                                      ? [
-                                          _c(
-                                            "a",
-                                            {
-                                              attrs: { href: "#" },
-                                              on: {
-                                                click: function($event) {
-                                                  $event.preventDefault()
-                                                  _vm.selectVariation(product)
+                                                  ]
+                                                ),
+                                                _vm._v(" "),
+                                                product.sku
+                                                  ? _c(
+                                                      "span",
+                                                      { staticClass: "sku" },
+                                                      [
+                                                        _vm._v(
+                                                          _vm._s(product.sku)
+                                                        )
+                                                      ]
+                                                    )
+                                                  : _vm._e(),
+                                                _vm._v(" "),
+                                                _c("span", {
+                                                  staticClass:
+                                                    "action flaticon-enter-arrow wepos-right"
+                                                })
+                                              ]
+                                            )
+                                          ]
+                                        : _vm._e(),
+                                      _vm._v(" "),
+                                      product.type == "variable"
+                                        ? [
+                                            _c(
+                                              "a",
+                                              {
+                                                attrs: { href: "#" },
+                                                on: {
+                                                  click: function($event) {
+                                                    $event.preventDefault()
+                                                    return _vm.selectVariation(
+                                                      product
+                                                    )
+                                                  }
                                                 }
-                                              }
-                                            },
-                                            [
-                                              _vm._v(
-                                                _vm._s(product.name) +
-                                                  "\n                                    "
-                                              ),
-                                              _c(
-                                                "span",
-                                                { staticClass: "price" },
-                                                [
-                                                  _vm._v(
-                                                    _vm._s(
-                                                      _vm.formatPrice(
-                                                        product.price
+                                              },
+                                              [
+                                                _vm._v(
+                                                  _vm._s(product.name) +
+                                                    "\n                                    "
+                                                ),
+                                                _c(
+                                                  "span",
+                                                  { staticClass: "price" },
+                                                  [
+                                                    _vm._v(
+                                                      _vm._s(
+                                                        _vm.formatPrice(
+                                                          product.price
+                                                        )
                                                       )
                                                     )
-                                                  )
-                                                ]
-                                              ),
-                                              _vm._v(" "),
-                                              product.sku
-                                                ? _c(
-                                                    "span",
-                                                    { staticClass: "sku" },
-                                                    [
-                                                      _vm._v(
-                                                        _vm._s(product.sku)
-                                                      )
-                                                    ]
-                                                  )
-                                                : _vm._e(),
-                                              _vm._v(" "),
-                                              _c("span", {
-                                                staticClass:
-                                                  "action flaticon-enter-arrow wepos-right"
-                                              })
-                                            ]
-                                          )
-                                        ]
-                                      : _vm._e()
-                                  ],
-                                  2
-                                )
-                              })
+                                                  ]
+                                                ),
+                                                _vm._v(" "),
+                                                product.sku
+                                                  ? _c(
+                                                      "span",
+                                                      { staticClass: "sku" },
+                                                      [
+                                                        _vm._v(
+                                                          _vm._s(product.sku)
+                                                        )
+                                                      ]
+                                                    )
+                                                  : _vm._e(),
+                                                _vm._v(" "),
+                                                _c("span", {
+                                                  staticClass:
+                                                    "action flaticon-enter-arrow wepos-right"
+                                                })
+                                              ]
+                                            )
+                                          ]
+                                        : _vm._e()
+                                    ],
+                                    2
+                                  )
+                                })
+                              }
                             }
-                          }
-                        ])
+                          ],
+                          null,
+                          false,
+                          2881840290
+                        )
                       })
                     ],
                     1
@@ -3859,7 +3947,7 @@ var render = function() {
                                     },
                                     on: {
                                       change: function($event) {
-                                        _vm.$set(
+                                        return _vm.$set(
                                           _vm.chosenAttribute,
                                           attribute.name,
                                           option
@@ -3884,7 +3972,8 @@ var render = function() {
                       ])
                     ]
                   )
-                })
+                }),
+                0
               ),
               _vm._v(" "),
               _c("template", { slot: "footer" }, [
@@ -3895,7 +3984,7 @@ var render = function() {
                     attrs: { disabled: _vm.attributeDisabled },
                     on: {
                       click: function($event) {
-                        _vm.addVariationProduct()
+                        return _vm.addVariationProduct()
                       }
                     }
                   },
@@ -3922,17 +4011,17 @@ if (false) {
 }
 
 /***/ }),
-/* 153 */
+/* 149 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_CustomerSearch_vue__ = __webpack_require__(67);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_CustomerSearch_vue__ = __webpack_require__(65);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_414ef29b_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_CustomerSearch_vue__ = __webpack_require__(155);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_414ef29b_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_CustomerSearch_vue__ = __webpack_require__(151);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(154)
+  __webpack_require__(150)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -3978,13 +4067,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 154 */
+/* 150 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 155 */
+/* 151 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4179,7 +4268,7 @@ var render = function() {
           on: {
             focus: function($event) {
               $event.preventDefault()
-              _vm.triggerFocus($event)
+              return _vm.triggerFocus($event)
             },
             keyup: _vm.searchCustomer,
             input: function($event) {
@@ -4196,7 +4285,7 @@ var render = function() {
           on: {
             click: function($event) {
               $event.preventDefault()
-              _vm.addNewCustomer()
+              return _vm.addNewCustomer()
             }
           }
         }),
@@ -4226,82 +4315,87 @@ var render = function() {
                         "key-down": _vm.onKeyDown,
                         "key-up": _vm.onKeyUp
                       },
-                      scopedSlots: _vm._u([
-                        {
-                          key: "default",
-                          fn: function(ref) {
-                            var selectedIndex = ref.selectedIndex
-                            return _vm._l(_vm.customers, function(
-                              customer,
-                              index
-                            ) {
-                              return _c(
-                                "li",
-                                {
-                                  key: index,
-                                  staticClass: "customer-search-item",
-                                  class: { selected: index === selectedIndex }
-                                },
-                                [
-                                  _c(
-                                    "a",
-                                    {
-                                      staticClass: "wepos-clearfix",
-                                      attrs: { href: "#" },
-                                      on: {
-                                        click: function($event) {
-                                          _vm.selectCustomer(customer)
+                      scopedSlots: _vm._u(
+                        [
+                          {
+                            key: "default",
+                            fn: function(ref) {
+                              var selectedIndex = ref.selectedIndex
+                              return _vm._l(_vm.customers, function(
+                                customer,
+                                index
+                              ) {
+                                return _c(
+                                  "li",
+                                  {
+                                    key: index,
+                                    staticClass: "customer-search-item",
+                                    class: { selected: index === selectedIndex }
+                                  },
+                                  [
+                                    _c(
+                                      "a",
+                                      {
+                                        staticClass: "wepos-clearfix",
+                                        attrs: { href: "#" },
+                                        on: {
+                                          click: function($event) {
+                                            return _vm.selectCustomer(customer)
+                                          }
                                         }
-                                      }
-                                    },
-                                    [
-                                      _c(
-                                        "span",
-                                        { staticClass: "avatar wepos-left" },
-                                        [
-                                          _c("img", {
-                                            attrs: {
-                                              src: customer.avatar_url,
-                                              alt:
+                                      },
+                                      [
+                                        _c(
+                                          "span",
+                                          { staticClass: "avatar wepos-left" },
+                                          [
+                                            _c("img", {
+                                              attrs: {
+                                                src: customer.avatar_url,
+                                                alt:
+                                                  customer.first_name +
+                                                  " " +
+                                                  customer.last_name
+                                              }
+                                            })
+                                          ]
+                                        ),
+                                        _vm._v(" "),
+                                        _c(
+                                          "span",
+                                          { staticClass: "name wepos-left" },
+                                          [
+                                            _vm._v(
+                                              _vm._s(
                                                 customer.first_name +
-                                                " " +
-                                                customer.last_name
-                                            }
-                                          })
-                                        ]
-                                      ),
-                                      _vm._v(" "),
-                                      _c(
-                                        "span",
-                                        { staticClass: "name wepos-left" },
-                                        [
-                                          _vm._v(
-                                            _vm._s(
-                                              customer.first_name +
-                                                " " +
-                                                customer.last_name
+                                                  " " +
+                                                  customer.last_name
+                                              )
+                                            ),
+                                            _c(
+                                              "span",
+                                              { staticClass: "metadata" },
+                                              [_vm._v(_vm._s(customer.email))]
                                             )
-                                          ),
-                                          _c(
-                                            "span",
-                                            { staticClass: "metadata" },
-                                            [_vm._v(_vm._s(customer.email))]
-                                          )
-                                        ]
-                                      ),
-                                      _vm._v(" "),
-                                      _c("span", {
-                                        staticClass:
-                                          "action flaticon-enter-arrow wepos-right"
-                                      })
-                                    ]
-                                  )
-                                ]
-                              )
-                            })
+                                          ]
+                                        ),
+                                        _vm._v(" "),
+                                        _c("span", {
+                                          staticClass:
+                                            "action flaticon-enter-arrow wepos-right"
+                                        })
+                                      ]
+                                    )
+                                  ]
+                                )
+                              })
+                            }
                           }
-                        }
-                      ])
+                        ],
+                        null,
+                        false,
+                        1035729388
+                      )
                     })
                   ],
                   1
@@ -4542,32 +4636,37 @@ var render = function() {
                                 select: _vm.handleCountrySelect,
                                 remove: _vm.removeCountrySelect
                               },
-                              scopedSlots: _vm._u([
-                                {
-                                  key: "singleLabel",
-                                  fn: function(props) {
-                                    return [
-                                      _c("span", {
-                                        domProps: {
-                                          innerHTML: _vm._s(props.option.name)
-                                        }
-                                      })
-                                    ]
+                              scopedSlots: _vm._u(
+                                [
+                                  {
+                                    key: "singleLabel",
+                                    fn: function(props) {
+                                      return [
+                                        _c("span", {
+                                          domProps: {
+                                            innerHTML: _vm._s(props.option.name)
+                                          }
+                                        })
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    key: "option",
+                                    fn: function(props) {
+                                      return [
+                                        _c("span", {
+                                          domProps: {
+                                            innerHTML: _vm._s(props.option.name)
+                                          }
+                                        })
+                                      ]
+                                    }
                                   }
-                                },
-                                {
-                                  key: "option",
-                                  fn: function(props) {
-                                    return [
-                                      _c("span", {
-                                        domProps: {
-                                          innerHTML: _vm._s(props.option.name)
-                                        }
-                                      })
-                                    ]
-                                  }
-                                }
-                              ]),
+                                ],
+                                null,
+                                false,
+                                568765526
+                              ),
                               model: {
                                 value: _vm.selectedCountry,
                                 callback: function($$v) {
@@ -4577,6 +4676,8 @@ var render = function() {
                               }
                             },
                             [
+                              _vm._v(" "),
+                              _vm._v(" "),
                               _c("template", { slot: "noResult" }, [
                                 _c("div", { staticClass: "no-data-found" }, [
                                   _vm._v(
@@ -4609,36 +4710,41 @@ var render = function() {
                                       label: "name"
                                     },
                                     on: { remove: _vm.removeStateSelect },
-                                    scopedSlots: _vm._u([
-                                      {
-                                        key: "singleLabel",
-                                        fn: function(props) {
-                                          return [
-                                            _c("span", {
-                                              domProps: {
-                                                innerHTML: _vm._s(
-                                                  props.option.name
-                                                )
-                                              }
-                                            })
-                                          ]
+                                    scopedSlots: _vm._u(
+                                      [
+                                        {
+                                          key: "singleLabel",
+                                          fn: function(props) {
+                                            return [
+                                              _c("span", {
+                                                domProps: {
+                                                  innerHTML: _vm._s(
+                                                    props.option.name
+                                                  )
+                                                }
+                                              })
+                                            ]
+                                          }
+                                        },
+                                        {
+                                          key: "option",
+                                          fn: function(props) {
+                                            return [
+                                              _c("span", {
+                                                domProps: {
+                                                  innerHTML: _vm._s(
+                                                    props.option.name
+                                                  )
+                                                }
+                                              })
+                                            ]
+                                          }
                                         }
-                                      },
-                                      {
-                                        key: "option",
-                                        fn: function(props) {
-                                          return [
-                                            _c("span", {
-                                              domProps: {
-                                                innerHTML: _vm._s(
-                                                  props.option.name
-                                                )
-                                              }
-                                            })
-                                          ]
-                                        }
-                                      }
-                                    ]),
+                                      ],
+                                      null,
+                                      false,
+                                      568765526
+                                    ),
                                     model: {
                                       value: _vm.selectedState,
                                       callback: function($$v) {
@@ -4648,6 +4754,8 @@ var render = function() {
                                     }
                                   },
                                   [
+                                    _vm._v(" "),
+                                    _vm._v(" "),
                                     _c("template", { slot: "noResult" }, [
                                       _c(
                                         "div",
@@ -4807,7 +4915,7 @@ var render = function() {
                     attrs: { disabled: _vm.isDisabled },
                     on: {
                       click: function($event) {
-                        _vm.createCustomer()
+                        return _vm.createCustomer()
                       }
                     }
                   },
@@ -4834,17 +4942,17 @@ if (false) {
 }
 
 /***/ }),
-/* 156 */
+/* 152 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_FeeKeypad_vue__ = __webpack_require__(68);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_FeeKeypad_vue__ = __webpack_require__(66);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_0bc4dc95_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_FeeKeypad_vue__ = __webpack_require__(161);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_0bc4dc95_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_FeeKeypad_vue__ = __webpack_require__(157);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(157)
+  __webpack_require__(153)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -4890,23 +4998,23 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 157 */
+/* 153 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 158 */
+/* 154 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Keyboard_vue__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Keyboard_vue__ = __webpack_require__(67);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_fbb6d6c8_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Keyboard_vue__ = __webpack_require__(160);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_fbb6d6c8_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Keyboard_vue__ = __webpack_require__(156);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(159)
+  __webpack_require__(155)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -4952,13 +5060,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 159 */
+/* 155 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 160 */
+/* 156 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5003,13 +5111,15 @@ var render = function() {
             on: {
               click: function($event) {
                 $event.preventDefault()
-                btn.action.callable($event)
+                return btn.action.callable($event)
               }
             }
           })
-        })
+        }),
+        0
       )
-    })
+    }),
+    0
   )
 }
 var staticRenderFns = []
@@ -5024,7 +5134,7 @@ if (false) {
 }
 
 /***/ }),
-/* 161 */
+/* 157 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5128,18 +5238,18 @@ if (false) {
 }
 
 /***/ }),
-/* 162 */,
-/* 163 */
+/* 158 */,
+/* 159 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_PrintReceipt_vue__ = __webpack_require__(71);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_PrintReceipt_vue__ = __webpack_require__(69);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_11ba6300_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_PrintReceipt_vue__ = __webpack_require__(165);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_11ba6300_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_PrintReceipt_vue__ = __webpack_require__(161);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(164)
+  __webpack_require__(160)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -5185,13 +5295,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 164 */
+/* 160 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 165 */
+/* 161 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5207,7 +5317,7 @@ var render = function() {
         on: {
           click: function($event) {
             $event.preventDefault()
-            _vm.printReceipt()
+            return _vm.printReceipt()
           }
         }
       },
@@ -5233,17 +5343,17 @@ if (false) {
 }
 
 /***/ }),
-/* 166 */
+/* 162 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_PrintReceiptHtml_vue__ = __webpack_require__(72);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_PrintReceiptHtml_vue__ = __webpack_require__(70);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_2db58d4b_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_PrintReceiptHtml_vue__ = __webpack_require__(168);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_2db58d4b_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_PrintReceiptHtml_vue__ = __webpack_require__(164);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(167)
+  __webpack_require__(163)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -5289,13 +5399,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 167 */
+/* 163 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 168 */
+/* 164 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5363,7 +5473,8 @@ var render = function() {
                                     _vm._v(_vm._s(attribute_item.option))
                                   ])
                                 ])
-                              })
+                              }),
+                              0
                             )
                           ])
                         : _vm._e()
@@ -5550,7 +5661,7 @@ var render = function() {
                   ? [
                       _c("tr", [
                         _c("td", { attrs: { colspan: "2" } }, [
-                          _vm._v(_vm._s(_vm.__("Cash Given", "wepos")))
+                          _vm._v(_vm._s(_vm.__("Paid Cash", "wepos")))
                         ]),
                         _vm._v(" "),
                         _c("td", { staticClass: "price" }, [
@@ -5562,7 +5673,7 @@ var render = function() {
                       _vm._v(" "),
                       _c("tr", [
                         _c("td", { attrs: { colspan: "2" } }, [
-                          _vm._v(_vm._s(_vm.__("Change Money", "wepos")))
+                          _vm._v(_vm._s(_vm.__("Change Amount", "wepos")))
                         ]),
                         _vm._v(" "),
                         _c("td", { staticClass: "price" }, [
@@ -5572,11 +5683,13 @@ var render = function() {
                         ])
                       ])
                     ]
-                  : (_vm.printdata.gateway.id = "wepos_shoplit")
+                  : _vm._e(),
+                _vm._v(" "),
+                (_vm.printdata.gateway.id = "wepos_shoplit")
                   ? [
                       _c("tr", [
                         _c("td", { attrs: { colspan: "2" } }, [
-                          _vm._v(_vm._s(_vm.__("Card Amount", "wepos")))
+                          _vm._v(_vm._s(_vm.__("Paid Card", "wepos")))
                         ]),
                         _vm._v(" "),
                         _c("td", { staticClass: "price" }, [
@@ -5584,10 +5697,19 @@ var render = function() {
                             _vm._s(_vm.formatPrice(_vm.printdata.cardamount))
                           )
                         ])
+                      ]),
+                      _vm._v(" "),
+                      _c("tr", [
+                        _c("td", { attrs: { colspan: "2" } }, [
+                          _vm._v(_vm._s(_vm.__("Auth Code", "wepos")))
+                        ]),
+                        _vm._v(" "),
+                        _c("td", { staticClass: "price" }, [
+                          _vm._v(_vm._s(_vm.printdata.authcode))
+                        ])
                       ])
                     ]
                   : _vm._e()
-
               ],
               2
             )
@@ -5624,17 +5746,17 @@ if (false) {
 }
 
 /***/ }),
-/* 169 */
+/* 165 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_CustomerNote_vue__ = __webpack_require__(73);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_CustomerNote_vue__ = __webpack_require__(71);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_4073e2a5_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_CustomerNote_vue__ = __webpack_require__(171);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_4073e2a5_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_CustomerNote_vue__ = __webpack_require__(167);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(170)
+  __webpack_require__(166)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -5680,13 +5802,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 170 */
+/* 166 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 171 */
+/* 167 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5726,7 +5848,7 @@ var render = function() {
               on: {
                 click: function($event) {
                   $event.preventDefault()
-                  _vm.openNote($event)
+                  return _vm.openNote($event)
                 }
               }
             },
@@ -5740,7 +5862,7 @@ var render = function() {
                 on: {
                   submit: function($event) {
                     $event.preventDefault()
-                    _vm.addCustomerNote($event)
+                    return _vm.addCustomerNote($event)
                   }
                 }
               },
@@ -5797,7 +5919,7 @@ if (false) {
 }
 
 /***/ }),
-/* 172 */
+/* 168 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5900,6 +6022,8 @@ var render = function() {
                   }
                 },
                 [
+                  _vm._v(" "),
+                  _vm._v(" "),
                   _c("template", { slot: "noResult" }, [
                     _c("div", { staticClass: "no-data-found" }, [
                       _vm._v(_vm._s(_vm.__("Not found", "wepos")))
@@ -5969,7 +6093,7 @@ var render = function() {
                 on: {
                   click: function($event) {
                     $event.preventDefault()
-                    _vm.removeBreadcrums($event)
+                    return _vm.removeBreadcrums($event)
                   }
                 }
               })
@@ -6000,18 +6124,8 @@ var render = function() {
                                       staticClass: "item-wrap",
                                       on: {
                                         click: function($event) {
-                                          if (
-                                            !("button" in $event) &&
-                                            _vm._k(
-                                              $event.keyCode,
-                                              "prevnt",
-                                              undefined,
-                                              $event.key
-                                            )
-                                          ) {
-                                            return null
-                                          }
-                                          _vm.addToCart(product)
+                                          $event.preventDefault()
+                                          return _vm.addToCart(product)
                                         }
                                       }
                                     },
@@ -6134,7 +6248,7 @@ var render = function() {
                                           staticClass: "item-wrap",
                                           on: {
                                             click: function($event) {
-                                              _vm.selectVariationProduct(
+                                              return _vm.selectVariationProduct(
                                                 product
                                               )
                                             }
@@ -6315,7 +6429,7 @@ var render = function() {
                                                                     change: function(
                                                                       $event
                                                                     ) {
-                                                                      _vm.$set(
+                                                                      return _vm.$set(
                                                                         _vm.selectedAttribute,
                                                                         attribute.name,
                                                                         option
@@ -6369,7 +6483,7 @@ var render = function() {
                                                 on: {
                                                   click: function($event) {
                                                     $event.preventDefault()
-                                                    _vm.addVariationProduct(
+                                                    return _vm.addVariationProduct(
                                                       $event
                                                     )
                                                   }
@@ -6465,7 +6579,7 @@ var render = function() {
                             on: {
                               click: function($event) {
                                 $event.preventDefault()
-                                _vm.openQucikMenu()
+                                return _vm.openQucikMenu()
                               }
                             }
                           },
@@ -6498,7 +6612,7 @@ var render = function() {
                                     on: {
                                       click: function($event) {
                                         $event.preventDefault()
-                                        _vm.emptyCart($event)
+                                        return _vm.emptyCart($event)
                                       }
                                     }
                                   },
@@ -6522,7 +6636,7 @@ var render = function() {
                                     on: {
                                       click: function($event) {
                                         $event.preventDefault()
-                                        _vm.openHelp($event)
+                                        return _vm.openHelp($event)
                                       }
                                     }
                                   },
@@ -6556,7 +6670,7 @@ var render = function() {
                                     on: {
                                       click: function($event) {
                                         $event.preventDefault()
-                                        _vm.logout($event)
+                                        return _vm.logout($event)
                                       }
                                     }
                                   },
@@ -6629,7 +6743,10 @@ var render = function() {
                                         staticClass: "name",
                                         on: {
                                           click: function($event) {
-                                            _vm.toggleEditQuantity(item, key)
+                                            return _vm.toggleEditQuantity(
+                                              item,
+                                              key
+                                            )
                                           }
                                         }
                                       },
@@ -6682,7 +6799,8 @@ var render = function() {
                                                         )
                                                       ])
                                                     }
-                                                  )
+                                                  ),
+                                                  0
                                                 )
                                               ]
                                             )
@@ -6696,7 +6814,10 @@ var render = function() {
                                         staticClass: "qty",
                                         on: {
                                           click: function($event) {
-                                            _vm.toggleEditQuantity(item, key)
+                                            return _vm.toggleEditQuantity(
+                                              item,
+                                              key
+                                            )
                                           }
                                         }
                                       },
@@ -6709,7 +6830,10 @@ var render = function() {
                                         staticClass: "price",
                                         on: {
                                           click: function($event) {
-                                            _vm.toggleEditQuantity(item, key)
+                                            return _vm.toggleEditQuantity(
+                                              item,
+                                              key
+                                            )
                                           }
                                         }
                                       },
@@ -6775,7 +6899,10 @@ var render = function() {
                                         on: {
                                           click: function($event) {
                                             $event.preventDefault()
-                                            _vm.toggleEditQuantity(item, key)
+                                            return _vm.toggleEditQuantity(
+                                              item,
+                                              key
+                                            )
                                           }
                                         }
                                       })
@@ -6787,7 +6914,7 @@ var render = function() {
                                         on: {
                                           click: function($event) {
                                             $event.preventDefault()
-                                            _vm.removeItem(key)
+                                            return _vm.removeItem(key)
                                           }
                                         }
                                       })
@@ -6873,7 +7000,7 @@ var render = function() {
                                                           $event
                                                         ) {
                                                           $event.preventDefault()
-                                                          _vm.addQuantity(
+                                                          return _vm.addQuantity(
                                                             item,
                                                             key
                                                           )
@@ -6893,7 +7020,7 @@ var render = function() {
                                                           $event
                                                         ) {
                                                           $event.preventDefault()
-                                                          _vm.removeQuantity(
+                                                          return _vm.removeQuantity(
                                                             item,
                                                             key
                                                           )
@@ -7040,7 +7167,7 @@ var render = function() {
                                                 "flaticon-cancel-music",
                                               on: {
                                                 click: function($event) {
-                                                  _vm.removeFeeLine(key)
+                                                  return _vm.removeFeeLine(key)
                                                 }
                                               }
                                             })
@@ -7229,25 +7356,33 @@ var render = function() {
                                                                       ) {
                                                                         $$i <
                                                                           0 &&
-                                                                          (_vm.feeData.tax_status = $$a.concat(
-                                                                            [
-                                                                              $$v
-                                                                            ]
-                                                                          ))
+                                                                          _vm.$set(
+                                                                            _vm.feeData,
+                                                                            "tax_status",
+                                                                            $$a.concat(
+                                                                              [
+                                                                                $$v
+                                                                              ]
+                                                                            )
+                                                                          )
                                                                       } else {
                                                                         $$i >
                                                                           -1 &&
-                                                                          (_vm.feeData.tax_status = $$a
-                                                                            .slice(
-                                                                              0,
-                                                                              $$i
-                                                                            )
-                                                                            .concat(
-                                                                              $$a.slice(
-                                                                                $$i +
-                                                                                  1
+                                                                          _vm.$set(
+                                                                            _vm.feeData,
+                                                                            "tax_status",
+                                                                            $$a
+                                                                              .slice(
+                                                                                0,
+                                                                                $$i
                                                                               )
-                                                                            ))
+                                                                              .concat(
+                                                                                $$a.slice(
+                                                                                  $$i +
+                                                                                    1
+                                                                                )
+                                                                              )
+                                                                          )
                                                                       }
                                                                     } else {
                                                                       _vm.$set(
@@ -7363,7 +7498,8 @@ var render = function() {
                                                                       ]
                                                                     )
                                                                   }
-                                                                )
+                                                                ),
+                                                                0
                                                               )
                                                             : _vm._e()
                                                         ]
@@ -7382,7 +7518,9 @@ var render = function() {
                                                             $event
                                                           ) {
                                                             $event.preventDefault()
-                                                            _vm.saveFee(key)
+                                                            return _vm.saveFee(
+                                                              key
+                                                            )
                                                           }
                                                         }
                                                       },
@@ -7407,7 +7545,7 @@ var render = function() {
                                                             $event
                                                           ) {
                                                             $event.preventDefault()
-                                                            _vm.cancelEditFee(
+                                                            return _vm.cancelEditFee(
                                                               key
                                                             )
                                                           }
@@ -7439,7 +7577,9 @@ var render = function() {
                                                         click: function(
                                                           $event
                                                         ) {
-                                                          _vm.removeFeeLine(key)
+                                                          return _vm.removeFeeLine(
+                                                            key
+                                                          )
                                                         }
                                                       }
                                                     })
@@ -7456,7 +7596,9 @@ var render = function() {
                                                         $event
                                                       ) {
                                                         $event.preventDefault()
-                                                        _vm.editFeeData(key)
+                                                        return _vm.editFeeData(
+                                                          key
+                                                        )
                                                       }
                                                     }
                                                   },
@@ -7513,7 +7655,9 @@ var render = function() {
                                                         click: function(
                                                           $event
                                                         ) {
-                                                          _vm.removeFeeLine(key)
+                                                          return _vm.removeFeeLine(
+                                                            key
+                                                          )
                                                         }
                                                       }
                                                     })
@@ -7601,7 +7745,7 @@ var render = function() {
                                     on: {
                                       click: function($event) {
                                         $event.preventDefault()
-                                        _vm.removeCustomerNote($event)
+                                        return _vm.removeCustomerNote($event)
                                       }
                                     }
                                   })
@@ -7615,7 +7759,7 @@ var render = function() {
                               staticClass: "pay-now",
                               on: {
                                 click: function($event) {
-                                  _vm.initPayment()
+                                  return _vm.initPayment()
                                 }
                               }
                             },
@@ -7656,7 +7800,7 @@ var render = function() {
               attrs: { width: "600px", height: "400px" },
               on: {
                 close: function($event) {
-                  _vm.createNewSale()
+                  return _vm.createNewSale()
                 }
               }
             },
@@ -7691,7 +7835,7 @@ var render = function() {
                           on: {
                             click: function($event) {
                               $event.preventDefault()
-                              _vm.createNewSale()
+                              return _vm.createNewSale()
                             }
                           }
                         },
@@ -7720,7 +7864,7 @@ var render = function() {
               attrs: { width: "700px", height: "500px" },
               on: {
                 close: function($event) {
-                  _vm.closeHelp()
+                  return _vm.closeHelp()
                 }
               }
             },
@@ -7896,7 +8040,7 @@ var render = function() {
               attrs: { width: "98%", height: "95vh" },
               on: {
                 close: function($event) {
-                  _vm.backToSale()
+                  return _vm.backToSale()
                 }
               }
             },
@@ -7953,7 +8097,8 @@ var render = function() {
                                               ]
                                             )
                                           ])
-                                        })
+                                        }),
+                                        0
                                       )
                                     ])
                                   : _vm._e()
@@ -8019,7 +8164,8 @@ var render = function() {
                                 2
                               )
                             ])
-                          })
+                          }),
+                          0
                         )
                       ])
                     ]),
@@ -8323,6 +8469,33 @@ var render = function() {
                           2
                         ),
                         _vm._v(" "),
+                        _c("div", { staticClass: "mpress_result" }, [
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.mpressResult,
+                                expression: "mpressResult"
+                              }
+                            ],
+                            staticStyle: { display: "none" },
+                            attrs: { id: "mpress_result" },
+                            domProps: { value: _vm.mpressResult },
+                            on: {
+                              input: [
+                                function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.mpressResult = $event.target.value
+                                },
+                                _vm.completePayment
+                              ]
+                            }
+                          })
+                        ]),
+                        _vm._v(" "),
                         _vm.orderdata.payment_method == "wepos_cash"
                           ? [
                               _c("div", { staticClass: "payment-option" }, [
@@ -8381,7 +8554,7 @@ var render = function() {
                                     _c("p", [
                                       _vm._v(
                                         _vm._s(
-                                          _vm.__("Change money", "wepos")
+                                          _vm.__("Change Amount", "wepos")
                                         ) +
                                           ": " +
                                           _vm._s(
@@ -8393,36 +8566,37 @@ var render = function() {
                                 ])
                               ])
                             ]
-                          : _vm.orderdata.payment_method == "wepos_shoplit"
+                          : _vm._e(),
+                        _vm._v(" "),
+                        _vm.orderdata.payment_method == "wepos_shoplit"
                           ? [
                               _c("div", { staticClass: "payment-option" }, [
                                 _c("div", { staticClass: "payment-amount" }, [
                                   _c("div", { staticClass: "input-part" }, [
-                                    _c("div", { staticClass: "input-wrap" }, [
+                                    _c("div", { staticClass: "text" }, [
                                       _c("p", [
-                                        _vm._v(_vm._s(_vm.__("Process Payment on the Shoplit PED", "wepos")))
-                                      ]),
-                                      _vm._v(" "),
-                                      _c(
-                                        "div",
-                                        { staticClass: "input-addon" },
-                                        [
-                                          _c("input", {
-                                            directives: [
-                                              {
-                                                name: "model",
-                                                rawName: "v-model",
-                                                value: _vm.cardAmount,
-                                                expression: "cardAmount"
-                                              }
-                                            ],
-                                            ref: "cardamount",
-                                            attrs: { type: "text", disabled: true },
-                                            domProps: { value: "Waiting" },
-                                          })
-                                        ]
-                                      ),
-                                      _vm._v(" "),
+                                        _vm._v(
+                                          _vm._s(
+                                            _vm.__(
+                                              "Follow the instructions on the Shoplit Device",
+                                              "wepos"
+                                            )
+                                          )
+                                        )
+                                      ])
+                                    ])
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("div", { staticClass: "change-money" }, [
+                                    _c("p", [
+                                      _vm._v(
+                                        _vm._s(
+                                          _vm.__(
+                                            "Hand Customer the Shoplit P.E.D.",
+                                            "wepos"
+                                          )
+                                        )
+                                      )
                                     ])
                                   ])
                                 ])
@@ -8453,7 +8627,7 @@ var render = function() {
                           on: {
                             click: function($event) {
                               $event.preventDefault()
-                              _vm.backToSale()
+                              return _vm.backToSale()
                             }
                           }
                         },
@@ -8468,7 +8642,7 @@ var render = function() {
                           on: {
                             click: function($event) {
                               $event.preventDefault()
-                              _vm.processPayment($event)
+                              return _vm.processPayment($event)
                             }
                           }
                         },
@@ -8531,4 +8705,4 @@ if (false) {
 }
 
 /***/ })
-]),[139]);
+]),[135]);

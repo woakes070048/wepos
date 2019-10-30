@@ -1,4 +1,4 @@
-<template>
+ <template>
     <div id="wepos-main" v-cloak v-hotkey="hotkeys">
         <div class="content-product">
             <div class="top-panel wepos-clearfix">
@@ -57,7 +57,7 @@
                 <template v-if="!productLoading">
                     <div class="item" v-if="getFilteredProduct.length > 0" v-for="product in getFilteredProduct">
                         <template v-if="product.type == 'simple'">
-                            <div class="item-wrap" @click.prevnt="addToCart(product)">
+                            <div class="item-wrap" @click.prevent="addToCart(product)">
                                 <div class="img">
                                     <!-- https://via.placeholder.com/138x90  -->
                                     <img :src="getProductImage(product)" :alt="getProductImageName( product )">
@@ -502,6 +502,9 @@
                                     <p>{{ __( 'No gateway found', 'wepos' ) }}</p>
                                 </template>
                             </div>
+                            <div class="mpress_result">
+                                <input style="display:none;" id="mpress_result" v-model="mpressResult" @input="completePayment">
+                            </div>
                             <template v-if="orderdata.payment_method=='wepos_cash'">
                                 <div class="payment-option">
                                     <div class="payment-amount">
@@ -515,7 +518,21 @@
                                             </div>
                                         </div>
                                         <div class="change-money">
-                                            <p>{{ __( 'Change money', 'wepos' ) }}: {{ formatPrice( changeAmount ) }}</p>
+                                            <p>{{ __( 'Change Amount', 'wepos' ) }}: {{ formatPrice( changeAmount ) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-if="orderdata.payment_method=='wepos_shoplit'">
+                                <div class="payment-option">
+                                    <div class="payment-amount">
+                                        <div class="input-part">
+                                            <div class="text">
+                                                <p>{{ __( 'Follow the instructions on the Shoplit Device', 'wepos' ) }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="change-money">
+                                            <p>{{ __( 'Hand Customer the Shoplit P.E.D.', 'wepos' ) }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -601,6 +618,8 @@ export default {
             availableGateways: [],
             emptyGatewayDiv: 0,
             cashAmount: '',
+            cardAmount: '',
+            authCode: '',
             availableTax: [],
             settings: {},
             taxSettings: {},
@@ -614,6 +633,8 @@ export default {
             createprintreceipt: false,
             selectedCategory: '',
             selectedGateway: '',
+            mpressResult: '',
+            contentWrap: {},
             categories: [],
             showReceiptHtml: wepos.hooks.applyFilters( 'wepos_render_receipt_html', true ),
             quickLinkList: wepos.hooks.applyFilters( 'wepos_quick_links', [] ),
@@ -712,7 +733,7 @@ export default {
         'selectedGateway'( newdata, olddata ) {
             var gateway = weLo_.find( this.availableGateways, { 'id' : newdata } );
             this.$store.dispatch( 'Order/setGatewayAction', gateway );
-        }
+        },
     },
 
     methods: {
@@ -753,6 +774,8 @@ export default {
 
             this.showPaymentReceipt = false;
             this.cashAmount = '';
+            this.cardAmount = '';
+            this.authCode = '';
             this.eventBus.$emit( 'emptycart', this.orderdata );
             this.showQucikMenu = false;
         },
@@ -790,25 +813,57 @@ export default {
                             key: '_wepos_is_pos_order',
                             value: true
                         },
-                        {
-                            key: '_wepos_cash_tendered_amount',
-                            value: self.cashAmount.toString()
-                        },
-                        {
-                            key: '_wepos_cash_change_amount',
-                            value: self.changeAmount.toString()
-                        }
                     ]
                 }, this.orderdata, this.cartdata );
 
-            var $contentWrap = jQuery('.wepos-checkout-wrapper .right-content').find('.content');
-            $contentWrap.block({ message: null, overlayCSS: { background: '#fff url(' + wepos.ajax_loader + ') no-repeat center', opacity: 0.4 } });
+            this.contentWrap = jQuery('.wepos-checkout-wrapper').find('.right-content');
+            this.contentWrap.block({ message: null, overlayCSS: { background: '#fff url(' + wepos.ajax_loader + ') no-repeat center', opacity: 0.4 } });
 
-            wepos.api.post( wepos.rest.root + wepos.rest.wcversion + '/orders', orderdata )
-            .done( response => {
-                wepos.api.post( wepos.rest.root + wepos.rest.posversion + '/payment/process', response )
-                .done( data => {
-                    if ( data.result == 'success' ) {
+            if (this.orderdata.payment_method == 'wepos_shoplit') {
+              if (typeof mpress == 'undefined' || navigator.userAgent.indexOf('SHOPLIT') == -1) {
+                var data = {
+                  result: 'failure',
+                  responseJSON: {
+                    message: this.__('Shoplit Interface not available', 'wepos')
+                  }
+                };
+                alert(data.responseJSON.message);
+                this.contentWrap.unblock();
+                this.$router.push({
+                  name: 'Home',
+                  query: {
+                      message: this.__('Shoplit Interface not available', 'wepos'),
+                      order_key: orderdata.order_key,
+                      payment: 'failure'
+                  }
+                });
+                return data;
+              }
+              wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders', orderdata).done(response => {
+                // Update the local copy
+                this.$store.state.Order.orderdata = response;
+                // Start the mPress/Shoplit Transaction on the PED
+                var result = mpress.startPEDPayment(response);
+                console.log('mPress Start result :'+result);
+              }).fail(response => {
+                this.contentWrap.unblock();
+                alert(response.responseJSON.message);
+              })
+            } else {
+              wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders', orderdata).done(response => {
+                  var update_meta_data = [
+                    {
+                        key: '_wepos_cash_tendered_amount',
+                        value: self.cashAmount.toString()
+                    },
+                    {
+                        key: '_wepos_cash_change_amount',
+                        value: self.changeAmount.toString()
+                    }
+                  ];
+                wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders/'+response.id, update_meta_data);
+                wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/payment/process', response).done(data => {
+                    if (data.result == 'success') {
                         this.$router.push({
                             name: 'Home',
                             query: {
@@ -816,7 +871,7 @@ export default {
                                 payment: 'success'
                             }
                         });
-                        this.printdata = wepos.hooks.applyFilters( 'wepos_after_payment_print_data', {
+                        this.printdata = wepos.hooks.applyFilters('wepos_after_payment_print_data', {
                             line_items: this.cartdata.line_items,
                             fee_lines: this.cartdata.fee_lines,
                             subtotal: this.$store.getters['Cart/getSubtotal'],
@@ -829,27 +884,99 @@ export default {
                             order_id: response.id,
                             order_date: response.date_created,
                             cashamount: this.cashAmount.toString(),
-                            changeamount: this.changeAmount.toString()
-                        }, orderdata );
-                    } else {
-                        $contentWrap.unblock();
+                            changeamount: this.changeAmount.toString(),
+                        }, orderdata);
                     }
-                }).fail( data => {
-                    $contentWrap.unblock();
-                    alert( data.responseJSON.message );
+                    contentWrap.unblock();
+                }).fail(data => {
+                    contentWrap.unblock();
+                    alert(data.responseJSON.message);
                 });
-            }).fail( response => {
-                $contentWrap.unblock();
-                alert( response.responseJSON.message );
-            } );
+              });
+            }
         },
+        completePayment(e) { // Complete the mPress Payment and record the result
+            // Get the stored order data
+            var orderdata = this.$store.state.Order.orderdata;
 
+            var response = JSON.parse(document.getElementById('mpress_result').value);
+            response = response.slice(1,-1);
+            this.mpressResult = JSON.parse(response);
+            this.cardAmount = this.mpressResult.DisplayTransactionAmount;
+            this.authCode = this.mpressResult.AuthorisationCode;
+            // Now update the meta_data with the payment response
+            var update_meta_data = {
+                "meta_data":[
+                {
+                    key: 'shoplit_card_tendered_amount',
+                    value: this.mpressResult.DisplayTransactionAmount
+                }, {
+                    key: 'shoplit_authorisation_code',
+                    value: this.mpressResult.AuthorisationCode
+                // }, {
+                //     key: 'shoplit_transaction_index',
+                //     value: transaction.TransactionIndex
+                }, {
+                    key: 'shoplit_pan',
+                    value: this.mpressResult.PAN
+                }, {
+                    key: 'shoplit_status_description',
+                    value: this.mpressResult.StatusDescription
+                }, {
+                    key: 'shoplit_status_description',
+                    value: JSON.stringify( this.mpressResult, null, 2)
+                }
+                ]
+            }
+            // Add additional Order Meta Data containing the payment info
+            wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders/' + orderdata.id, update_meta_data).done(ordermetaupdate =>{
+                orderdata.meta_data = ordermetaupdate.meta_data;
+                this.$store.state.Order.orderdata = orderdata;
+            });            // Add the notes
+            var order_note = {
+                note: 'Transaction Result: '+JSON.stringify(this.mpressResult,null, 2)
+            };
+            wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders/'+orderdata.id+'/notes', order_note); // Nothing we can do if it fails
+            // Now process the payment
+            wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/payment/process', orderdata).done(process_response => {
+                if (process_response.result == 'success') {
+                    this.$router.push({
+                        name: 'Home',
+                        query: {
+                            order_key: orderdata.order_key,
+                            payment: 'success'
+                        }
+                    });
+                    this.printdata = wepos.hooks.applyFilters('wepos_after_payment_print_data', {
+                        line_items: this.cartdata.line_items,
+                        fee_lines: this.cartdata.fee_lines,
+                        subtotal: this.$store.getters['Cart/getSubtotal'],
+                        taxtotal: this.$store.getters['Cart/getTotalTax'],
+                        ordertotal: this.$store.getters['Cart/getTotal'],
+                        gateway: {
+                            id: orderdata.payment_method,
+                            title: orderdata.payment_method_title
+                        },
+                        order_id: orderdata.id,
+                        order_date: orderdata.date_created,
+                        cardamount: this.cardAmount.toString(),
+                        authcode: this.authCode
+                    }, orderdata);
+                    this.contentWrap.unblock();
+                } else {
+                this.contentWrap.unblock();
+                }
+            }).fail(fail_resp => {
+                this.contentWrap.unblock();
+                alert(fail_resp.responseJSON.message);
+            })
+            this.contentWrap.unblock();
+        },
         initPayment() {
             this.showModal = true;
             this.$store.dispatch( 'Order/setGatewayAction', this.availableGateways[0] );
             this.selectedGateway = this.availableGateways[0].id;
         },
-
         backToSale() {
             this.showModal = false;
             this.showHelp = false;
@@ -907,7 +1034,6 @@ export default {
                 this.productLoading = false;
             }
         },
-
         maybeRemoveDeletedProduct( cartData ) {
             return new Promise( ( resolve, reject ) => {
                 if ( ! cartData ) {
@@ -942,7 +1068,6 @@ export default {
                 });
             });
         },
-
         selectCustomer( customer ) {
             this.$store.dispatch( 'Order/setCustomerAction', customer );
         },
@@ -1066,7 +1191,7 @@ export default {
         },
         filterProducts() {
             this.products = this.products.filter( ( product ) => {
-                return weLo_.findIndex( product.categories, { id : this.$route.query.category } ) > 0;
+                return product.categories.findIndex( function(el) {return (el.id == this.$route.query.category) } ) > 0;
             } );
         },
 

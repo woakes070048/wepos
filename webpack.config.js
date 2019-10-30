@@ -120,7 +120,14 @@ module.exports = {
 
     plugins,
     module: {
-    rules: [
+        loaders: [
+            {
+              test: /\.js$/,
+              loader: 'babel-loader',
+              exclude: /node_modules/
+            }
+          ],
+        rules: [
         {
             test: /\.js$/,
             exclude: /(node_modules|bower_components)/,
