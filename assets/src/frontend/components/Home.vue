@@ -528,11 +528,11 @@
                                     <div class="payment-amount">
                                         <div class="input-part">
                                             <div class="text">
-                                                <p>{{ __( 'Follow the instructions on the Shoplit Device', 'wepos' ) }}</p>
+                                                <p>{{ __( 'Hand Customer the Shoplit P.E.D. and follow the instructions on the Shoplit Device', 'wepos' ) }}</p>
                                             </div>
                                         </div>
                                         <div class="change-money">
-                                            <p>{{ __( 'Hand Customer the Shoplit P.E.D.', 'wepos' ) }}</p>
+                                            <p>{{ __( 'Touch Process Payment to start the payment process', 'wepos' ) }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -821,33 +821,38 @@ export default {
 
             if (this.orderdata.payment_method == 'wepos_shoplit') {
               if (typeof mpress == 'undefined' || navigator.userAgent.indexOf('SHOPLIT') == -1) {
-                var data = {
-                  result: 'failure',
-                  responseJSON: {
-                    message: this.__('Shoplit Interface not available', 'wepos')
-                  }
-                };
-                alert(data.responseJSON.message);
-                this.contentWrap.unblock();
-                this.$router.push({
-                  name: 'Home',
-                  query: {
-                      message: this.__('Shoplit Interface not available', 'wepos'),
-                      order_key: orderdata.order_key,
-                      payment: 'failure'
-                  }
-                });
-                return data;
+                // var data = {
+                //   result: 'failure',
+                //   responseJSON: {
+                //     message: this.__('Shoplit Interface not available', 'wepos')
+                //   }
+                // };
+                // alert(data.responseJSON.message);
+                // this.contentWrap.unblock();
+                // this.$router.push({
+                //   name: 'Home',
+                //   query: {
+                //       message: this.__('Shoplit Interface not available', 'wepos'),
+                //       order_key: orderdata.order_key,
+                //       payment: 'failure'
+                //   }
+                // });
+                // return data;
+                // Fake Trans
+                var res = "{\"POS_OS_Version\":\"8-1\",\"EMV_TransactionStatusInformation\":\"E800\",\"RequestID\":\"{84E7D4AC-CCBD-48D4-997F-762D121F3078}\",\"EMV_CardSequenceNumber\":\"00\",\"EMV_ApplicationVersion\":\"008C\",\"AuthorisationCode\":\"140423\",\"ReceiptFormat\":\"html\",\"CurrencyDecimalPosition\":\"2\",\"EMV_ApplicationInterchangeProfile\":\"3C00\",\"PANMode\":\"Dipped\",\"RequestSignature\":\"false\",\"POS_Application_Version\":\"1-47\",\"Version\":\"2.0\",\"StatusDescription\":\"TRANSACTION APPROVED\",\"Currency\":\"710\",\"EMV_IssuerAuthenticationData\":\"1448C67D7F4E52723030\",\"AcceptSignatureCard\":false,\"DisplayTransactionAmount\":\"R 106.00\",\"TipAmount\":\"0\",\"ExpiryYear\":\"19\",\"EMV_AuthorisationRequestCryptogram\":\"58A1CE7CC60005E2\",\"POS_Manufacturer\":\"Miura\",\"Status\":\"0\",\"DottedPAN\":\"492312FFFFFF1826\",\"ExpiryMonth\":\"11\",\"EMV_ResponseCode\":\"00\",\"Timeout\":\"60\",\"AcceptManualEntry\":\"false\",\"DisplayTransactionDateTime\":\"2019-10-31 11:10\",\"MerchantUSN\":\"1732668\",\"POS_Model\":\"\",\"Track2\":\"41BC1938B963926937074197BA2C91FBA683B5E9396FCF00\",\"EMV_CardHolderVerificationMethodResult\":\"440302\",\"EMV_ApplicationIdentifier\":\"A0000000031010\",\"Distributor\":\"Nedbank\",\"Transaction\":{\"MerchantReference\":\"613\",\"ExpiryDate\":\"112019\",\"RequestID\":\"{84E7D4AC-CCBD-48D4-997F-762D121F3078}\",\"Issuer\":\"Unknown Issuer\",\"AuthorisationCode\":\"140423\",\"ReconReference\":\"09014915\",\"MerchantCountry\":\"South Africa\",\"PANMode\":\"Dipped,EMV,EncryptedTrack2\",\"AcquirerTime\":\"111045\",\"Result\":{\"Status\":\"0\",\"AppServer\":\"QAGW2012APP1\",\"AcquirerDescription\":\"\",\"Description\":\"\",\"DBServer\":\"qagw2012db2\",\"Gateway\":\"QA\",\"AcquirerCode\":\"00\",\"Code\":\"0\"},\"Association\":\"VISA\",\"MerchantName\":\"mPRESS\",\"AcquirerDate\":\"20191031\",\"TransactionIndex\":\"{896E6F4B-2EC5-40F2-A3DB-386E211FDFB5}\",\"CardType\":\"Unknown Card Type\",\"Currency\":\"ZAR\",\"EMV_IssuerAuthenticationData\":\"1448C67D7F4E52723030\",\"Acquirer\":\"NBPostilionNBSouthAfrica\",\"ApplicationID\":\"{4925859B-8452-4680-B06D-D8328E34EB53}\",\"EMV_ResponseCode\":\"00\",\"MerchantAddress\":\"MERCHANT ADDRESS\",\"BIN\":\"492312\",\"Amount\":\"10600\",\"DistributorName\":\"Nedbank\",\"Mode\":\"Live\",\"MerchantCountryCode\":\"ZA\",\"MerchantUSN\":\"1732668\",\"MerchantTrace\":\"077837e2-6a1c-4929-a74a-521c0f6ae790\",\"Terminal\":\"mpress1\",\"DisplayAmount\":\"R 106.00\",\"Jurisdiction\":\"Local\",\"MerchantCity\":\"JOHANNESBURG\",\"CardHolderPresence\":\"CardPresent\",\"Command\":\"Debit\",\"AcquirerReference\":\"01692:09014915\",\"PAN\":\"4923........1826\"},\"ResultDescription\":\"\",\"ReceiptGraphicFileName\":\"\",\"PromptForCash\":\"false\",\"MerchantReference\":\"613\",\"TransactionType\":\"Sale\",\"P2PEStatus\":\"06\",\"PromptForTip\":\"false\",\"EMV_IssuerScriptTemplate2\":\"\",\"CardAcceptorID\":\"\",\"EMV_IssuerScriptTemplate1\":\"\",\"POS_OS\":\"M000-TESTOS\",\"EMV_IssuerApplicationData\":\"06010A03A40002\",\"DeviceSerialNumber\":\"21002911\",\"Track2KeySerialNumber\":\"FFFF8002920672000007\",\"EMV_TerminalCapabilities\":\"E0F8C8\",\"Direction\":\"Response\",\"EMV_TerminalType\":\"22\",\"PrintMerchantReceipt\":\"false\",\"POS_Application\":\"M000-MPI\",\"MerchantName\":\"mPRESS\",\"AcceptPinCard\":true,\"AcceptSmartCard\":true,\"DeviceMake\":\"Miura\",\"EMV_TerminalVerificationResult\":\"0080008000\",\"PrintCustomerReceipt\":\"false\",\"EMV_UnpredictableNumber\":\"C310A037\",\"BatteryLevel\":\"100\",\"Amount\":\"10600\",\"PromptForBudgetPeriod\":\"false\",\"EMV_CryptogramInformationData\":\"80\",\"BatteryStatus\":\"Charging\",\"PrinterStatus\":\"NoPrinter\",\"IsDebug\":\"false\",\"AcquirerReference\":\"01692:09014915\",\"EMV_ApplicationTransactionCounter\":\"0160\",\"PAN\":\"4923........1826\",\"ResultCode\":\"0\",\"CashAmount\":\"0\"}";
+                document.getElementById('mpress_result').value = res;
+                document.getElementById('mpress_result').dispatchEvent(new Event("input")); // Triggers change event in Home.vue
               }
+              if (orderdata.billing.email == "")
+                delete orderdata.billing.email;
               wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders', orderdata).done(response => {
                 // Update the local copy
                 this.$store.state.Order.orderdata = response;
                 // Start the mPress/Shoplit Transaction on the PED
                 var result = mpress.startPEDPayment(response);
-                console.log('mPress Start result :'+result);
               }).fail(response => {
                 this.contentWrap.unblock();
-                alert(response.responseJSON.message);
+                window.Shoplit.showToast('There is a problem with the order. Please Empty the cart and restart the order\n'+response.responseJSON.message);
               })
             } else {
               wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders', orderdata).done(response => {
@@ -898,10 +903,22 @@ export default {
         completePayment(e) { // Complete the mPress Payment and record the result
             // Get the stored order data
             var orderdata = this.$store.state.Order.orderdata;
-
-            var response = JSON.parse(document.getElementById('mpress_result').value);
-            response = response.slice(1,-1);
-            this.mpressResult = JSON.parse(response);
+            // Get the response inserted into the DOM by the Android app
+            this.mpressResult = JSON.parse(JSON.parse(document.getElementById('mpress_result').value));
+            var rc = 255;
+            try {
+                rc = this.mpressResult.ResultCode;
+                if (rc != 0) {
+                    // Payment has failed
+                    this.contentWrap.unblock();
+                    wndow.Shoplit.showToast(this.mpressResult.StatusDescription + ' (' +this.mpressResult.ResultCode +') ' + this.mpressResult.ResultDescription);
+                    return;
+                }
+            } catch (ex) {
+                this.contentWrap.unblock();
+                alert(ex.message);
+                return;
+            }
             this.cardAmount = this.mpressResult.DisplayTransactionAmount;
             this.authCode = this.mpressResult.AuthorisationCode;
             // Now update the meta_data with the payment response
@@ -913,9 +930,9 @@ export default {
                 }, {
                     key: 'shoplit_authorisation_code',
                     value: this.mpressResult.AuthorisationCode
-                // }, {
-                //     key: 'shoplit_transaction_index',
-                //     value: transaction.TransactionIndex
+                }, {
+                    key: 'shoplit_transaction_index',
+                    value: this.mpressResult.Transaction.TransactionIndex
                 }, {
                     key: 'shoplit_pan',
                     value: this.mpressResult.PAN
@@ -923,7 +940,7 @@ export default {
                     key: 'shoplit_status_description',
                     value: this.mpressResult.StatusDescription
                 }, {
-                    key: 'shoplit_status_description',
+                    key: 'shoplit_transaction',
                     value: JSON.stringify( this.mpressResult, null, 2)
                 }
                 ]
@@ -932,45 +949,45 @@ export default {
             wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders/' + orderdata.id, update_meta_data).done(ordermetaupdate =>{
                 orderdata.meta_data = ordermetaupdate.meta_data;
                 this.$store.state.Order.orderdata = orderdata;
-            });            // Add the notes
-            var order_note = {
-                note: 'Transaction Result: '+JSON.stringify(this.mpressResult,null, 2)
-            };
-            wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders/'+orderdata.id+'/notes', order_note); // Nothing we can do if it fails
-            // Now process the payment
-            wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/payment/process', orderdata).done(process_response => {
-                if (process_response.result == 'success') {
-                    this.$router.push({
-                        name: 'Home',
-                        query: {
-                            order_key: orderdata.order_key,
-                            payment: 'success'
-                        }
-                    });
-                    this.printdata = wepos.hooks.applyFilters('wepos_after_payment_print_data', {
-                        line_items: this.cartdata.line_items,
-                        fee_lines: this.cartdata.fee_lines,
-                        subtotal: this.$store.getters['Cart/getSubtotal'],
-                        taxtotal: this.$store.getters['Cart/getTotalTax'],
-                        ordertotal: this.$store.getters['Cart/getTotal'],
-                        gateway: {
-                            id: orderdata.payment_method,
-                            title: orderdata.payment_method_title
-                        },
-                        order_id: orderdata.id,
-                        order_date: orderdata.date_created,
-                        cardamount: this.cardAmount.toString(),
-                        authcode: this.authCode
-                    }, orderdata);
+                var order_note = {
+                    note: 'Transaction Result: '+JSON.stringify(this.mpressResult,null, 2)
+                };
+                wepos.api.post(wepos.rest.root + wepos.rest.wcversion + '/orders/'+orderdata.id+'/notes', order_note); // Ignore failures
+                // Now process the payment
+                wepos.api.post(wepos.rest.root + wepos.rest.posversion + '/payment/process', orderdata).done(process_response => {
+                    if (process_response.result == 'success') {
+                        this.$router.push({
+                            name: 'Home',
+                            query: {
+                                order_key: orderdata.order_key,
+                                payment: 'success'
+                            }
+                        });
+                        this.printdata = wepos.hooks.applyFilters('wepos_after_payment_print_data', {
+                            line_items: this.cartdata.line_items,
+                            fee_lines: this.cartdata.fee_lines,
+                            subtotal: this.$store.getters['Cart/getSubtotal'],
+                            taxtotal: this.$store.getters['Cart/getTotalTax'],
+                            ordertotal: this.$store.getters['Cart/getTotal'],
+                            gateway: {
+                                id: orderdata.payment_method,
+                                title: orderdata.payment_method_title
+                            },
+                            order_id: orderdata.id,
+                            order_date: orderdata.date_created,
+                            cardamount: this.cardAmount.toString(),
+                            authcode: this.authCode
+                        }, orderdata);
+                        this.contentWrap.unblock();
+                    } else {
                     this.contentWrap.unblock();
-                } else {
+                    }
+                }).fail(fail_resp => {
+                    this.contentWrap.unblock();
+                    alert(JSON.stringify(fail_resp));
+                })
                 this.contentWrap.unblock();
-                }
-            }).fail(fail_resp => {
-                this.contentWrap.unblock();
-                alert(fail_resp.responseJSON.message);
-            })
-            this.contentWrap.unblock();
+            });
         },
         initPayment() {
             this.showModal = true;

@@ -101,8 +101,11 @@ class Shoplit extends \WC_Payment_Gateway
     public function process_payment($order_id)
     {
         $order = wc_get_order($order_id);
-        $post_data = wp_unslash($_POST);
 
+        $transaction = json_decode($order->get_meta('shoplit_transaction'),true);
+        
+        $order->maybe_set_date_paid();
+        $order->set_transaction_id($transaction['RequestID']);
         // Mark as completed
         $order->payment_complete();
 

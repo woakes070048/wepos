@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@wordpress/hooks": "^2.0.5",
-    "babel": "^6.23.0",
     "lodash": "^4.17.15",
     "lodash.throttle": "^4.1.1",
     "v-hotkey": "^0.3.0",
