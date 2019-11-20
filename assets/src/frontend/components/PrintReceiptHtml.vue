@@ -1,98 +1,46 @@
 <template>
-    <div class="wepos-checkout-print-wrapper" v-if="settings.wepos_receipts">
-        <div class="header" v-html="settings.wepos_receipts.receipt_header"></div>
-        <div class="order-info">
-            <span class="wepos-left"><strong>{{ __( 'Order ID', 'wepos' ) }}: #{{ printdata.order_id }}</strong></span>
-            <span class="wepos-right"><strong>{{ __( 'Order Date', 'wepos' ) }}: {{ formatDate( printdata.order_date ) }}</strong></span>
-            <div class="wepos-clearfix"></div>
-        </div>
-        <div class="content">
-            <table class="sale-summary">
-                <tbody>
-                    <tr v-for="item in printdata.line_items">
-                        <td class="name">
-                            {{ item.name }}
-                            <div class="attribute" v-if="item.attribute.length > 0">
-                                <ul>
-                                    <li v-for="attribute_item in item.attribute"><span class="attr_name">{{ attribute_item.name }}</span>: <span class="attr_value">{{ attribute_item.option }}</span></li>
-                                </ul>
-                            </div>
-                        </td>
-                        <td class="quantity">{{ item.quantity }}</td>
-                        <td class="price">
-                            <template v-if="item.on_sale">
-                                <span class="regular-price">{{ formatPrice( item.quantity*item.regular_price ) }}</span>
-                                <span class="sale-price">{{ formatPrice( item.quantity*item.sale_price ) }}</span>
-                            </template>
-                            <template v-else>
-                                <span class="sale-price">{{ formatPrice( item.quantity*item.regular_price ) }}</span>
-                            </template>
-                        </td>
-                    </tr>
-                    <tr class="cart-meta-data">
-                        <td colspan="2" class="name">
-                            {{ __( 'Subtotal', 'wepos' ) }}
-                            <span class="metadata" v-if="settings.woo_tax.wc_tax_display_cart == 'incl'">
-                                {{ __( 'Includes Tax', 'wepos' ) }} {{ formatPrice( $store.getters['Cart/getTotalLineTax'] ) }}
-                            </span>
-                        </td>
-                        <td class="price">{{ formatPrice( printdata.subtotal ) }}</td>
-                    </tr>
-                    <tr v-for="(fee,key) in printdata.fee_lines" class="cart-meta-data">
-                        <template v-if="fee.type=='discount'">
-                            <td colspan="2" class="name">{{ __( 'Discount', 'wepos' ) }} <span class="metadata">{{ fee.discount_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ) }}</span></td>
-                            <td class="price">-{{ formatPrice( Math.abs( fee.total ) ) }}</td>
-                        </template>
-                        <template v-else>
-                            <td colspan="2" class="name">{{ __( 'Fee', 'wepos' ) }} <span class="metadata">{{ fee.name }} {{ fee.fee_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ) }}</span></td>
-                            <td class="price">-{{ formatPrice( Math.abs( fee.total ) ) }}</td>
-                        </template>
-                    </tr>
-                    <tr v-if="printdata.taxtotal">
-                        <td colspan="2" class="name">{{ __( 'Tax', 'wepos' ) }}</td>
-                        <td class="price">{{ formatPrice(printdata.taxtotal) }}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" class="name">{{ __( 'Order Total', 'wepos' ) }}</td>
-                        <td class="price">{{ formatPrice(printdata.ordertotal) }}</td>
-                    </tr>
-                    <tr class="divider">
-                        <td colspan="3"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">{{ __( 'Payment method', 'wepos' ) }}</td>
-                        <td class="price">{{ printdata.gateway.title || '' }}</td>
-                    </tr>
-                    <template v-if="printdata.gateway.id='wepos_cash'">
-                        <tr>
-                            <td colspan="2">{{ __( 'Paid Cash', 'wepos' ) }}</td>
-                            <td class="price">{{ formatPrice( printdata.cashamount ) }}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">{{ __( 'Change Amount', 'wepos' ) }}</td>
-                            <td class="price">{{ formatPrice( printdata.changeamount ) }}</td>
-                        </tr>
-                    </template>
-                    <template v-if="printdata.gateway.id='wepos_shoplit'">
-                        <tr>
-                            <td colspan="2">{{ __( 'Paid Card', 'wepos' ) }}</td>
-                            <td class="price">{{ formatPrice( printdata.cardamount ) }}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">{{ __( 'Auth Code', 'wepos' ) }}</td>
-                            <td class="price">{{ printdata.authcode }}</td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-        <div class="footer" v-html="settings.wepos_receipts.receipt_footer"></div>
-    </div>
+<div class="wepos-checkout-print-wrapper" v-if="settings.wepos_receipts">
+<div>{{ sprintf("%17s",settings.wepos_receipts.receipt_header)}}</div>
+<div>{{ sprintf("Order#%-8s %20s", printdata.order_id, formatDate( printdata.order_date ))}}</div>
+<div>-----------------------------------</div>
+<div v-for="item in printdata.line_items" v-bind:key="item.id">
+<template v-if="item.on_sale">
+<div>{{ sprintf("%-5s%-15s%15s",item.quantity, item.name, formatPrice( item.quantity*item.sale_price )) }}</div>
+<div>{{ sprintf("Regular Price :%-15s",formatPrice( item.quantity*item.regular_price )) }}</div>
+<div>{{ sprintf("**Sale Item**")}}</div>
+</template>
+<template v-else>
+<div>{{ sprintf("%-5s%-15s%15s",item.quantity, item.name, formatPrice( item.quantity*item.regular_price )) }}</div>
+</template>
+<template v-if="item.attribute.length > 1"><div v-for="attribute_item in item.attribute" v-bind:key="attribute_item.name">{{ sprintf("   %-s:%-s", attribute_item.name.trim(), attribute_item.option )}}</div></template>
+</div>
+<div>-----------------------------------</div>
+<template v-if="settings.woo_tax.wc_tax_display_cart == 'incl'"><div>{{ sprintf("%-12s%-12s%11s", __( 'Subtotal', 'wepos' ),  __( 'Includes Tax', 'wepos' ), formatPrice( $store.getters['Cart/getTotalLineTax'] )) }}</div></template>
+<template v-else><div>{{ sprintf("%-12s%-12s%11s", __( 'Subtotal', 'wepos' ),  "", formatPrice( $store.getters['Cart/getTotalLineTax'] )) }}</div></template>
+<div v-for="(fee,key) in printdata.fee_lines" class="cart-meta-data" v-bind:key="key">
+<template v-if="fee.type=='discount'"><div>{{ sprintf("%-10s%-10s%15s", __( 'Discount', 'wepos' ) , fee.discount_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ), formatPrice( Math.abs( fee.total ) )) }}</div></template>
+<template v-else><div>{{ sprintf("%-5s%-10s%-5s%15s", __( 'Fee', 'wepos' ), fee.name, fee.fee_type == 'percent' ? fee.value + '%' : formatPrice( fee.value ), formatPrice( Math.abs( fee.total ) )) }}</div></template>
+</div>
+<template v-if="printdata.taxtotal"><div>{{ sprintf("%-12s%20s", __( 'Tax', 'wepos' ), formatPrice(printdata.taxtotal)) }}</div></template>
+<template><div>{{ sprintf("%-15s%20s", __( 'Order Total', 'wepos' ).trim(), formatPrice(printdata.ordertotal)) }}</div></template>
+<template><div>{{ sprintf("%-15s%20s", __( 'Payment method', 'wepos' ), printdata.gateway.title) }}</div></template>
+<template v-if="printdata.gateway.id=='wepos_cash'">
+<div>{{ sprintf("%-15s%20s", __( 'Paid Cash', 'wepos' ), formatPrice(printdata.cashamount)) }}</div>
+<div>{{ sprintf("%-15s%20s", __( 'Change Amount', 'wepos' ), formatPrice(printdata.changeamount)) }}</div>
+</template>
+<template v-if="printdata.gateway.id=='wepos_shoplit'">
+<div>-----------------------------------</div>
+<div>{{ sprintf("%-15s%20s", __( 'Paid Card', 'wepos' ), formatPrice(printdata.cardamount)) }}</div>
+<div>{{ sprintf("%-15s%20s", __( 'Auth Code', 'wepos' ), printdata.authcode) }}</div>
+</template>
+<div>-----------------------------------</div>
+<div>{{ sprintf("%17s",settings.wepos_receipts.receipt_footer)}}</div>
+</div>
 </template>
 <script>
 
 export default {
-    name: 'ReceiptPrintHtml',
+    name: 'ReceiptPrintText',
 
     props: {
         printdata: {

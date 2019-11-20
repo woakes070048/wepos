@@ -15,9 +15,15 @@ export default {
     methods: {
         printReceipt() {
             var orderdata = this.$store.state.Order.orderdata;
+            var html = window.document.getElementsByClassName('wepos-checkout-print-wrapper')[0].innerHTML;
+            var txt = htmlToText(html);
+            
             if (orderdata.payment_method == "wepos_shoplit" && typeof window.Shoplit != 'undefined') {
-              window.Shoplit.printReceipt(JSON.stringify(orderdata));
-              return;
+                // This takes the receipt DV and sends it to Shoplit
+                var html = window.document.getElementsByClassName('wepos-checkout-print-wrapper')[0].innerHTML;
+                
+                window.Shoplit.printReceipt(htmlToText(html));
+                return;
             }
 
             setTimeout( () => {
@@ -27,6 +33,16 @@ export default {
     }
 };
 
+function htmlToText(html){
+    html = html.replace(/<div>/g, "");
+    html = html.replace(/<\/div>/g, "\n");
+    html = html.replace(/<\!--.*?-->/g, "");
+    html = html.replace(/\n\s*/g, "\n");
+
+    //parse html into text
+    var dom = (new DOMParser()).parseFromString('<!doctype html><body>' + html, 'text/html');
+    return dom.body.textContent;
+}
 </script>
 
 <style lang="less">

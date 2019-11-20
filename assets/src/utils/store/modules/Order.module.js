@@ -8,6 +8,11 @@ export default {
             customer_note: '',
             payment_method: '',
             payment_method_title: '',
+        },
+        paymentdata: {
+            ResultCode: 9,
+            StatusDescription: 'N/A',
+            ResultDescription: ''
         }
     },
     getters: {},
@@ -24,6 +29,16 @@ export default {
                 }
             } else {
                 state.orderdata = orderdata;
+            }
+        },
+
+        setPaymentData( state, paymentdata ) {
+            if ( weLo_.isEmpty( paymentdata ) ) {
+                state.paymentdata = {
+                    //TODO: Put some useful defaults here
+                }
+            } else {
+                state.paymentdata = paymentdata;
             }
         },
 
@@ -66,6 +81,10 @@ export default {
     actions: {
         setOrderDataAction( context, orderdata ) {
             context.commit( 'setOrderData', orderdata );
+        },
+
+        setPaymentDataAction( context, paymentdata ) {
+            context.commit( 'setPaymentData', paymentdata );
         },
 
         setCustomerAction( context, customer ) {
